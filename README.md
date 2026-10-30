@@ -8,7 +8,7 @@ The action supports Linux, macOS, and Windows on amd64 and arm64 where the reque
 
 ```yaml
 - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-- uses: sneat-dev/setup-wb@dfab3874ddba921222c66d98ee4dfbe8fe0379b3
+- uses: sneat-dev/setup-wb@2029b9536b166a0196d88d0ab151701cadff3cbf
   with:
     version: v0.203.0
 - run: wb --version
