@@ -4,6 +4,7 @@ if ($Child) {
     function Invoke-RestMethod {
         param($Headers, $Uri)
         if ($Uri -ne 'https://api.github.com/repos/sneat-dev/wb/releases/tags/v1.2.3') { throw "unexpected API URL: $Uri" }
+        if ($Mode -eq 'missing') { return @{ assets = @(@{name = 'wb_1.2.3_checksums.txt'}) } }
         return @{ assets = @(@{name = $Archive}, @{name = 'wb_1.2.3_checksums.txt'}) }
     }
     function Invoke-WebRequest {
@@ -39,6 +40,9 @@ try {
     $hash = (Get-FileHash -Algorithm SHA256 (Join-Path $tmp 'archive')).Hash
     Set-Content (Join-Path $tmp 'checksums.txt') "$hash  $archive"
     $log = Join-Path $tmp 'log'
+    & pwsh -NoProfile -File $PSCommandPath -Child -Mode missing -Fixture $tmp -Archive $archive *> $log
+    if ($LASTEXITCODE -eq 0 -or (Get-Content -Raw $log) -notmatch 'no archive published') { throw 'missing asset failure not detected' }
+    if ((Test-Path (Join-Path $tmp 'path')) -or (Test-Path (Join-Path $tmp 'output'))) { throw 'missing asset installed a binary' }
     & pwsh -NoProfile -File $PSCommandPath -Child -Mode independent -Fixture $tmp -Archive $archive *> $log
     if ($LASTEXITCODE -eq 0 -or (Get-Content -Raw $log) -notmatch 'expected-sha256 mismatch') { throw 'independent digest failure not detected' }
     Set-Content (Join-Path $tmp 'checksums.txt') (('0' * 64) + "  $archive")

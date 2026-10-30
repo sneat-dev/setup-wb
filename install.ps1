@@ -42,7 +42,8 @@ try {
     if (-not (Test-Path -LiteralPath $source -PathType Leaf)) { throw 'binary missing from archive' }
     $destination = Join-Path $env:RUNNER_TEMP ("wb-bin-" + [guid]::NewGuid())
     New-Item -ItemType Directory -Path $destination | Out-Null
-    Copy-Item -LiteralPath $source -Destination (Join-Path $destination $name)
+    # Preserve release-provided license and notice files alongside the binary.
+    Copy-Item -Path (Join-Path $extract '*') -Destination $destination -Recurse -Force
     if ($osName -ne 'windows') { & chmod +x (Join-Path $destination $name); if ($LASTEXITCODE -ne 0) { throw 'chmod failed' } }
     Add-Content -Path $env:GITHUB_PATH -Value $destination
     Add-Content -Path $env:GITHUB_OUTPUT -Value "version=$version"
