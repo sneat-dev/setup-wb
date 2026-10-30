@@ -1,0 +1,46 @@
+name: Self-test
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: setup
+        if: runner.os != 'Windows'
+        uses: ./
+        with:
+          version: v0.203.0
+      - name: Verify installed CLI
+        if: runner.os != 'Windows'
+        shell: pwsh
+        env:
+          RESULT_VERSION: ${{ steps.setup.outputs.version }}
+          RESULT_PATH: ${{ steps.setup.outputs.path }}
+        run: |
+          if ($env:RESULT_VERSION -ne 'v0.203.0' -or (Get-Command wb).Source -ne $env:RESULT_PATH) { throw 'wrong installed binary' }
+          $reported = & wb --version
+          if ($LASTEXITCODE -ne 0 -or $reported -notmatch '(^|[^0-9])0\.203\.0([^0-9]|$)') { throw "wrong binary version: $reported" }
+      - id: windows_unavailable
+        if: runner.os == 'Windows'
+        continue-on-error: true
+        uses: ./
+        with:
+          version: v0.203.0
+      - name: Check unavailable Windows asset
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          OUTCOME: ${{ steps.windows_unavailable.outcome }}
+        run: if ($env:OUTCOME -ne 'failure') { throw 'unexpected Windows asset' }
+      - name: Test checksum failures
+        shell: pwsh
+        run: ./test-install.ps1
