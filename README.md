@@ -13,3 +13,5 @@ The action supports Linux, macOS, and Windows on amd64 and arm64 where the reque
     version: v0.203.0
 - run: wb --version
 ```
+
+Self-hosted runners need PowerShell (`pwsh`); Unix runners also need `tar` and `chmod`.
