@@ -2,7 +2,7 @@ name: Setup WB
 description: Install an exact released WB CLI binary
 inputs:
   version:
-    description: Exact WB CLI release tag, such as v0.203.0
+    description: Exact WB CLI release tag, such as v0.204.0
     required: true
   expected-sha256:
     description: Optional independent SHA-256 for this platform's archive
